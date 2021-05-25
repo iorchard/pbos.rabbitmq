@@ -1,0 +1,9 @@
+---
+- name: Debian | Install rabbitmq server package
+  ansible.builtin.apt:
+    name: "rabbitmq-server"
+    state: present
+    update_cache: true
+    allow_unauthenticated: false
+  become: true
+...

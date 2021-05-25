@@ -1,0 +1,13 @@
+initstepslew 1 {% for s in groups['controller'] %}{% if inventory_hostname != s %}{{ s }} {% endif %}{% endfor %}
+
+{% for s in groups['controller'] %}
+{% if inventory_hostname != s %}
+server {{ s }}
+{% endif %}
+{% endfor %}
+driftfile /var/lib/chrony/chrony.drift
+logdir /var/log/chrony
+local stratum 8 orphan
+manual
+rtcsync
+allow {{ ntp_allowed_cidr }}

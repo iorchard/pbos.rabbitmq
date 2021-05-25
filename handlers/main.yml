@@ -1,0 +1,11 @@
+---
+- name: systemctl restart rabbitmq-server.service
+  service:
+    name: "rabbitmq-server.service"
+    state: "restarted"
+    enabled: true
+  become: true
+  changed_when: false
+  register: restart_rabbitmq_service
+  failed_when: restart_rabbitmq_service.failed
+...

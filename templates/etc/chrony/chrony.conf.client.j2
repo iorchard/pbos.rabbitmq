@@ -1,0 +1,7 @@
+{% for s in groups['controller'] %}
+server {{ s }} iburst
+{% endfor %}
+driftfile /var/lib/chrony/chrony.drift
+logdir /var/log/chrony
+makestep 1.0 3
+rtcsync

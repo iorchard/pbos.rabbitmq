@@ -1,0 +1,43 @@
+---
+- name: Cluster | get erlang cookie from the first node
+  ansible.builtin.slurp:
+    src: "/var/lib/rabbitmq/.erlang.cookie"
+  register: cookie
+  become: true
+  delegate_to: "{{ groups['rabbitmq'][0] }}"
+  run_once: true
+
+- name: Cluster | copy erlang cookie from the first node to other nodes
+  ansible.builtin.copy:
+    content: "{{ cookie.content | b64decode }}"
+    dest: "/var/lib/rabbitmq/.erlang.cookie"
+  become: true
+  when: inventory_hostname != groups['rabbitmq'][0]
+
+- name: Cluster | restart rabbitmq-server on joining nodes
+  ansible.builtin.service:
+    name: "rabbitmq-server.service"
+    state: "restarted"
+    enabled: true
+  become: true
+  when: inventory_hostname != groups['rabbitmq'][0]
+
+- name: Cluster | run rabbitmqctl stop_app
+  ansible.builtin.command: rabbitmqctl stop_app
+  become: true
+  when: inventory_hostname != groups['rabbitmq'][0]
+
+- name: Cluster | join cluster
+  ansible.builtin.command:
+    argv:
+      - rabbitmqctl
+      - join_cluster
+      - "rabbit@{{ groups['rabbitmq'][0] }}"
+  become: true
+  when: inventory_hostname != groups['rabbitmq'][0]
+
+- name: Cluster | run rabbitmqctl start_app
+  ansible.builtin.command: rabbitmqctl start_app
+  become: true
+  when: inventory_hostname != groups['rabbitmq'][0]
+...
