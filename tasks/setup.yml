@@ -1,0 +1,23 @@
+---
+- name: Setup | add openstack user
+  ansible.builtin.command:
+    argv:
+      - rabbitmqctl
+      - add_user
+      - openstack
+      - "{{ rabbitmq_openstack_password }}"
+  become: true
+  delegate_to: "{{ groups['rabbitmq'][0] }}"
+  run_once: true
+
+- name: Setup | set permission for openstack user
+  ansible.builtin.command:
+    argv:
+      - rabbitmqctl
+      - set_permissions
+      - openstack
+      - '".*" ".*" ".*"'
+  become: yes
+  delegate_to: "{{ groups['rabbitmq'][0] }}"
+  run_once: true
+...
