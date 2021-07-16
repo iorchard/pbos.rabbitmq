@@ -1,23 +1,21 @@
 ---
 - name: Setup | add openstack user
-  ansible.builtin.command:
-    argv:
-      - rabbitmqctl
-      - add_user
-      - openstack
-      - "{{ rabbitmq_openstack_password }}"
+  community.rabbitmq.rabbitmq_user:
+    user: openstack
+    password: "{{ rabbitmq_openstack_password }}"
+    vhost: /
+    configure_priv: .*
+    read_priv: .*
+    write_priv: .*
+    state: present
+    force: true
   become: true
   delegate_to: "{{ groups['rabbitmq'][0] }}"
   run_once: true
 
-- name: Setup | set permission for openstack user
-  ansible.builtin.command:
-    argv:
-      - rabbitmqctl
-      - set_permissions
-      - openstack
-      - '".*" ".*" ".*"'
-  become: yes
-  delegate_to: "{{ groups['rabbitmq'][0] }}"
-  run_once: true
+- name: Setup | enable plugins
+  community.rabbitmq.rabbitmq_plugin:
+    names: "{{ rabbitmq_plugins }}"
+    state: enabled
+  become: true
 ...

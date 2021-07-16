@@ -1,0 +1,83 @@
+---
+- name: Start | include default variables
+  tags: rabbitmq
+  ansible.builtin.include_vars: "../vars/main.yml"
+
+- name: Start | include os specific variables
+  tags: rabbitmq
+  ansible.builtin.include_vars: "{{ lookup('first_found', _params) }}"
+  vars:
+    _params:
+      files:
+        - "{{ ansible_distribution | lower }}-{{ ansible_distribution_version | lower }}.yml"
+        - "{{ ansible_distribution | lower }}-{{ ansible_distribution_release | lower }}.yml"
+        - "{{ ansible_distribution | lower }}-{{ ansible_distribution_major_version | lower }}.yml"
+        - "{{ ansible_os_family | lower }}-{{ ansible_distribution_major_version | lower }}.yml"
+        - "{{ ansible_distribution | lower }}.yml"
+        - "{{ ansible_os_family | lower }}.yml"
+      paths:
+        - "../vars"
+
+- name: get bootstrap server
+  tags: rabbitmq
+  ansible.builtin.lineinfile:
+    path: "{{ bootstrap_file }}"
+    line: "['rabbit@{{ inventory_hostname }}']."
+    state: present
+  check_mode: true
+  become: true
+  register: safe_to_bootstrap
+
+- name: get the server that can bootstrap safely
+  tags: rabbitmq
+  set_fact:
+    bootstrap: "{{ safe_to_bootstrap.changed | ternary(false, true) }}"
+
+- name: show bootstrap
+  tags: rabbitmq
+  debug:
+    msg: "{{ bootstrap }}"
+
+- name: start service on bootstrap server
+  tags: rabbitmq
+  block:
+    - name: start service
+      ansible.builtin.service:
+        name: "{{ item }}"
+        state: "started"
+      become: true
+      register: start_service
+      failed_when: start_service.failed
+      loop: "{{ systemd_service_name }}"
+      when: bootstrap
+    - name: wait until port is opened
+      ansible.builtin.wait_for:
+        host: "{{ ansible_host }}"
+        port: "{{ rabbitmq_port }}"
+        delay: 5
+        sleep: 2
+        timeout: 20
+        state: started
+      when: bootstrap
+
+- name: start service on other server
+  tags: rabbitmq
+  block:
+    - name: start service
+      ansible.builtin.service:
+        name: "{{ item }}"
+        state: "started"
+      become: true
+      register: start_service
+      failed_when: start_service.failed
+      loop: "{{ systemd_service_name }}"
+      when: not bootstrap
+    - name: wait until port is opened
+      ansible.builtin.wait_for:
+        host: "{{ ansible_host }}"
+        port: "{{ rabbitmq_port }}"
+        sleep: 2
+        timeout: 10
+        state: started
+      when: not bootstrap
+...

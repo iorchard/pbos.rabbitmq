@@ -6,4 +6,20 @@
     update_cache: true
     allow_unauthenticated: false
   become: true
+
+- name: Debian | template rabbitmq-env.conf
+  ansible.builtin.template:
+    dest: "{{ item.dest }}"
+    src: "{{ ansible_distribution | lower }}{{ item.dest + '.j2' }}"
+    owner: "rabbitmq"
+    group: "rabbitmq"
+    mode: "0644"
+  loop: "{{ service_conf }}"
+  become: true
+  changed_when: true
+  notify:
+    - systemctl restart service
+
+- name: Debian | force handlers to run
+  ansible.builtin.meta: flush_handlers
 ...

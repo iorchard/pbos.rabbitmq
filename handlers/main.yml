@@ -1,11 +1,12 @@
 ---
-- name: systemctl restart rabbitmq-server.service
+- name: systemctl restart service
   service:
-    name: "rabbitmq-server.service"
+    name: "{{ item }}"
     state: "restarted"
     enabled: true
   become: true
   changed_when: false
-  register: restart_rabbitmq_service
-  failed_when: restart_rabbitmq_service.failed
+  register: restart_service
+  failed_when: restart_service.failed
+  loop: "{{ systemd_service_name }}"
 ...

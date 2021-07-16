@@ -1,3 +1,8 @@
 ---
-rabbitmq_openstack_password: ""
+service_name: rabbitmq
+rabbitmq_openstack_password: ~
+# enable rabbitmq plugins (comma-separated list)
+rabbitmq_plugins: "rabbitmq_management"
+rabbitmq_port: 5672
+bootstrap_file: "/var/lib/rabbitmq/mnesia/rabbit@{{ inventory_hostname }}/nodes_running_at_shutdown"
 ...
