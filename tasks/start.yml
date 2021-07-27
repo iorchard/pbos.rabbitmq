@@ -1,24 +1,9 @@
 ---
-- name: Start | include default variables
+- name: Start | import common tasks
   tags: rabbitmq
-  ansible.builtin.include_vars: "../vars/main.yml"
+  ansible.builtin.import_tasks: "common.yml"
 
-- name: Start | include os specific variables
-  tags: rabbitmq
-  ansible.builtin.include_vars: "{{ lookup('first_found', _params) }}"
-  vars:
-    _params:
-      files:
-        - "{{ ansible_distribution | lower }}-{{ ansible_distribution_version | lower }}.yml"
-        - "{{ ansible_distribution | lower }}-{{ ansible_distribution_release | lower }}.yml"
-        - "{{ ansible_distribution | lower }}-{{ ansible_distribution_major_version | lower }}.yml"
-        - "{{ ansible_os_family | lower }}-{{ ansible_distribution_major_version | lower }}.yml"
-        - "{{ ansible_distribution | lower }}.yml"
-        - "{{ ansible_os_family | lower }}.yml"
-      paths:
-        - "../vars"
-
-- name: get bootstrap server
+- name: Start | get bootstrap server
   tags: rabbitmq
   ansible.builtin.lineinfile:
     path: "{{ bootstrap_file }}"
@@ -28,17 +13,17 @@
   become: true
   register: safe_to_bootstrap
 
-- name: get the server that can bootstrap safely
+- name: Start | get the server that can bootstrap safely
   tags: rabbitmq
   set_fact:
     bootstrap: "{{ safe_to_bootstrap.changed | ternary(false, true) }}"
 
-- name: show bootstrap
+- name: Start | show bootstrap
   tags: rabbitmq
   debug:
     msg: "{{ bootstrap }}"
 
-- name: start service on bootstrap server
+- name: Start | start service on bootstrap server
   tags: rabbitmq
   block:
     - name: start service
@@ -60,7 +45,7 @@
         state: started
       when: bootstrap
 
-- name: start service on other server
+- name: Start | start service on other server
   tags: rabbitmq
   block:
     - name: start service
