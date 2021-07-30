@@ -1,11 +1,16 @@
 ---
 - name: Debian | Install rabbitmq server package
   ansible.builtin.apt:
-    name: "rabbitmq-server"
-    state: present
+    name: "{{ item }}"
+    state: "{{ apt_state }}"
     update_cache: true
     allow_unauthenticated: false
+  register: _apt
+  until: not _apt.failed
+  retries: 3
+  delay: 3
   become: true
+  loop: "{{ packages }}"
 
 - name: Debian | template rabbitmq-env.conf
   ansible.builtin.template:

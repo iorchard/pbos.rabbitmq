@@ -1,10 +1,14 @@
 ---
 - name: Stop | import common tasks
-  tags: rabbitmq
+  tags:
+    - rabbitmq
+    - pbos-infra
   ansible.builtin.import_tasks: "common.yml"
 
 - name: Stop | stop service
-  tags: rabbitmq
+  tags:
+    - rabbitmq
+    - pbos-infra
   block:
     - name: stop service
       ansible.builtin.service:

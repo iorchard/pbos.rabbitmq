@@ -1,10 +1,14 @@
 ---
 - name: Start | import common tasks
-  tags: rabbitmq
+  tags:
+    - rabbitmq
+    - pbos-infra
   ansible.builtin.import_tasks: "common.yml"
 
 - name: Start | get bootstrap server
-  tags: rabbitmq
+  tags:
+    - rabbitmq
+    - pbos-infra
   ansible.builtin.lineinfile:
     path: "{{ bootstrap_file }}"
     line: "['rabbit@{{ inventory_hostname }}']."
@@ -14,17 +18,23 @@
   register: safe_to_bootstrap
 
 - name: Start | get the server that can bootstrap safely
-  tags: rabbitmq
+  tags:
+    - rabbitmq
+    - pbos-infra
   set_fact:
     bootstrap: "{{ safe_to_bootstrap.changed | ternary(false, true) }}"
 
 - name: Start | show bootstrap
-  tags: rabbitmq
+  tags:
+    - rabbitmq
+    - pbos-infra
   debug:
     msg: "{{ bootstrap }}"
 
 - name: Start | start service on bootstrap server
-  tags: rabbitmq
+  tags:
+    - rabbitmq
+    - pbos-infra
   block:
     - name: start service
       ansible.builtin.service:
@@ -46,7 +56,9 @@
       when: bootstrap
 
 - name: Start | start service on other server
-  tags: rabbitmq
+  tags:
+    - rabbitmq
+    - pbos-infra
   block:
     - name: start service
       ansible.builtin.service:
