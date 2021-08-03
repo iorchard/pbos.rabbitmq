@@ -1,0 +1,11 @@
+---
+apt_state: "latest"
+packages:
+  - rabbitmq-server
+
+service_conf:
+  - {dest: "/etc/rabbitmq/rabbitmq-env.conf"}
+
+systemd_service_name:
+  - rabbitmq-server.service
+...

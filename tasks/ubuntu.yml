@@ -1,0 +1,30 @@
+---
+- name: Ubuntu | Install rabbitmq server package
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: "{{ apt_state }}"
+    update_cache: true
+    allow_unauthenticated: false
+  register: _apt
+  until: not _apt.failed
+  retries: 3
+  delay: 3
+  become: true
+  loop: "{{ packages }}"
+
+- name: Ubuntu | template rabbitmq-env.conf
+  ansible.builtin.template:
+    dest: "{{ item.dest }}"
+    src: "{{ ansible_os_family | lower }}{{ item.dest + '.j2' }}"
+    owner: "rabbitmq"
+    group: "rabbitmq"
+    mode: "0644"
+  loop: "{{ service_conf }}"
+  become: true
+  changed_when: true
+  notify:
+    - systemctl restart service
+
+- name: Ubuntu | force handlers to run
+  ansible.builtin.meta: flush_handlers
+...
