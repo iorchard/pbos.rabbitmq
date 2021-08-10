@@ -1,5 +1,5 @@
 ---
-apt_state: "latest"
+pkg_state: "latest"
 packages:
   - rabbitmq-server
 
