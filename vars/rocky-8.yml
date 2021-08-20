@@ -8,11 +8,12 @@ rabbitmq_repo:
   file: "/tmp/rabbitmq_repo_setup.sh"
   checksum: "01d5d487166a59d44d1003cd74ae27b75842ca8765970c19a19b4e3d0a0b9328"
 
-rabbitmq_erlang_repo: "/etc/yum.repos.d/rabbitmq_erlang.repo"
-
 rabbitmq_repo_gpg_keys:
   - "https://github.com/rabbitmq/signing-keys/releases/download/2.0/rabbitmq-release-signing-key.asc"
   - "https://packagecloud.io/rabbitmq/erlang/gpgkey"
+  - "https://packagecloud.io/rabbitmq/rabbitmq-server/gpgkey"
+
+rabbitmq_erlang_repo: "/etc/yum.repos.d/rabbitmq_erlang.repo"
 
 service_conf:
   - {dest: "/etc/rabbitmq/rabbitmq-env.conf"}

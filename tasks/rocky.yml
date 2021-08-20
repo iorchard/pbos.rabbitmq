@@ -1,28 +1,28 @@
 ---
-- name: CentOS | copy rabbitmq repo setup script
+- name: Rocky Linux | copy rabbitmq repo setup script
   ansible.builtin.copy:
     src: "{{ ansible_os_family | lower }}{{ rabbitmq_repo.file }}"
     dest: "{{ rabbitmq_repo.file }}"
     mode: "0755"
 
-- name: CentOS | set rabbitmq repo
+- name: Rocky Linux | set rabbitmq repo
   ansible.builtin.command: "{{ rabbitmq_repo.file }}"
   become: true
 
-- name: CentOS | copy erlang repo file
+- name: Rocky Linux | copy erlang repo file
   ansible.builtin.copy:
     src: "{{ ansible_os_family | lower }}{{ rabbitmq_erlang_repo }}"
     dest: "{{ rabbitmq_erlang_repo }}"
     mode: "0644"
   become: true
 
-- name: CentOS | import repo gpg keys
+- name: Rocky Linux | import repo gpg keys
   ansible.builtin.command: >-
     rpm --import {{ item }}
   become: true
   loop: "{{ rabbitmq_repo_gpg_keys }}"
 
-- name: CentOS | install packages
+- name: Rocky Linux | install packages
   ansible.builtin.package:
     name: "{{ item }}"
     state: "{{ pkg_state }}"
@@ -33,7 +33,7 @@
   become: true
   loop: "{{ packages }}"
 
-- name: CentOS | template rabbitmq-env.conf
+- name: Rocky Linux | template rabbitmq-env.conf
   ansible.builtin.template:
     dest: "{{ item.dest }}"
     src: "{{ ansible_os_family | lower }}{{ item.dest + '.j2' }}"
@@ -46,6 +46,6 @@
   notify:
     - systemctl restart service
 
-- name: CentOS | force handlers to run
+- name: Rocky Linux | force handlers to run
   ansible.builtin.meta: flush_handlers
 ...
