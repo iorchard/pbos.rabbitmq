@@ -5,4 +5,27 @@ rabbitmq_openstack_password: ~
 rabbitmq_plugins: "rabbitmq_management"
 rabbitmq_port: 5672
 bootstrap_file: "/var/lib/rabbitmq/mnesia/rabbit@{{ inventory_hostname }}/nodes_running_at_shutdown"
+# TLS
+rabbitmq_tls_port: 5671
+tls_tmp_dir: "/tmp/rabbitmq_tls"
+tls_subj: {
+  country_name: "KR",
+  state_or_province_name: "Gangwon-Do",
+  locality_name: "Wonju-Si",
+  organization_name: "iOrchard",
+  common_name: "PBOS_RABBITMQ",
+  email_address: "support@iorchard.co.kr"
+}
+tls_tmp_ca: {
+  key: "{{ tls_tmp_dir }}/ca-key.pem",
+  crt: "{{ tls_tmp_dir }}/ca-cert.pem"
+}
+tls_tmp_server: {
+  key: "{{ tls_tmp_dir }}/server-key.pem",
+}
+tls_days: "+3650d"
+tls_server_dir: "/etc/rabbitmq/certificates"
+tls_server_key: "{{ tls_server_dir }}/server-key.pem"
+tls_server_cert: "{{ tls_server_dir }}/server-cert.pem"
+tls_server_ca_cert: "{{ tls_server_dir }}/ca-cert.pem"
 ...

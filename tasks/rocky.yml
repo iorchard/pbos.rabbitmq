@@ -33,7 +33,7 @@
   become: true
   loop: "{{ packages }}"
 
-- name: Rocky Linux | template rabbitmq-env.conf
+- name: Rocky Linux | template rabbitmq config
   ansible.builtin.template:
     dest: "{{ item.dest }}"
     src: "{{ ansible_os_family | lower }}{{ item.dest + '.j2' }}"

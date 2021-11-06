@@ -1,0 +1,146 @@
+---
+- name: TLS | create temporary certificate directory
+  ansible.builtin.file:
+    path: "{{ tls_tmp_dir }}"
+    state: directory
+    mode: "0700"
+  delegate_to: "{{ groups['rabbitmq'][0] }}"
+  run_once: true
+
+- name: TLS | create server certificate directory
+  ansible.builtin.file:
+    path: "{{ tls_server_dir }}"
+    state: directory
+    mode: "0755"
+  become: true
+
+- name: TLS | create CA passphrase
+  ansible.builtin.set_fact:
+    tls_ca_passphrase: "{{ lookup('password', '/dev/null') }}"
+  delegate_to: "{{ groups['rabbitmq'][0] }}"
+  run_once: true
+
+- name: TLS | create CA private key with password protection
+  community.crypto.openssl_privatekey:
+    path: "{{ tls_tmp_ca.key }}"
+    passphrase: "{{ tls_ca_passphrase }}"
+    select_crypto_backend: cryptography
+    type: RSA
+    size: 4096
+    cipher: auto
+  delegate_to: "{{ groups['rabbitmq'][0] }}"
+  run_once: true
+
+- name: TLS | create CSR for CA certificate
+  community.crypto.openssl_csr_pipe:
+    privatekey_path: "{{ tls_tmp_ca.key }}"
+    privatekey_passphrase: "{{ tls_ca_passphrase }}"
+    country_name: "{{ tls_subj.country_name }}"
+    state_or_province_name: "{{ tls_subj.state_or_province_name }}"
+    organization_name: "{{ tls_subj.organization_name }}"
+    common_name: "{{ tls_subj.common_name }}"
+    email_address: "{{ tls_subj.email_address }}"
+    use_common_name_for_san: false
+    basic_constraints:
+      - 'CA:TRUE'
+    basic_constraints_critical: true
+    key_usage:
+      - keyCertSign
+    key_usage_critical: true
+  register: ca_csr
+  delegate_to: "{{ groups['rabbitmq'][0] }}"
+  run_once: true
+
+- name: TLS | create CA certificate
+  community.crypto.x509_certificate:
+    path: "{{ tls_tmp_ca.crt }}"
+    csr_content: "{{ ca_csr.csr }}"
+    ownca_not_after: "+36500d"
+    ownca_not_before: "+0s"
+    privatekey_path: "{{ tls_tmp_ca.key }}"
+    privatekey_passphrase: "{{ tls_ca_passphrase }}"
+    provider: selfsigned
+  delegate_to: "{{ groups['rabbitmq'][0] }}"
+  run_once: true
+
+- name: TLS | copy ca certificate file to all nodes
+  ansible.builtin.copy:
+    dest: "{{ tls_server_ca_cert }}"
+    src: "{{ tls_tmp_ca.crt }}"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  become: true
+
+- name: TLS | create private key for server certificate
+  community.crypto.openssl_privatekey:
+    path: "{{ tls_tmp_server.key }}"
+    select_crypto_backend: cryptography
+    type: RSA
+    size: 4096
+  delegate_to: "{{ groups['rabbitmq'][0] }}"
+  run_once: true
+
+- name: TLS | create CSR for server certificate
+  community.crypto.openssl_csr_pipe:
+    privatekey_path: "{{ tls_tmp_server.key }}"
+    country_name: "{{ tls_subj.country_name }}"
+    state_or_province_name: "{{ tls_subj.state_or_province_name }}"
+    organization_name: "{{ tls_subj.organization_name }}"
+    common_name: "{{ tls_subj.common_name }}"
+    email_address: "{{ tls_subj.email_address }}"
+    use_common_name_for_san: false
+    subject_alt_name: "IP:{{ keepalived_vip }},{% for s in groups['rabbitmq'] %}IP:{{ hostvars[s].ansible_host }}{% if not loop.last %},{% endif %}{% endfor %}"
+  register: server_csr
+  delegate_to: "{{ groups['rabbitmq'][0] }}"
+  run_once: true
+
+- name: TLS | check if server certificate exists
+  ansible.builtin.stat:
+    path: "{{ tls_server_cert }}"
+  register: server_cert_exists
+
+- name: TLS | read server certificate if exists
+  ansible.builtin.slurp:
+    src: "{{ tls_server_cert }}"
+  register: server_certificate
+  when:
+    - server_cert_exists.stat.exists
+
+- name: TLS | sign server certificate with CA
+  community.crypto.x509_certificate_pipe:
+    content: "{{ (server_certificate.content | b64decode) if server_cert_exists.stat.exists else omit }}"
+    csr_content: "{{ server_csr.csr }}"
+    provider: ownca
+    ownca_path: "{{ tls_tmp_ca.crt }}"
+    ownca_privatekey_path: "{{ tls_tmp_ca.key }}"
+    ownca_privatekey_passphrase: "{{ tls_ca_passphrase }}"
+    ownca_not_after: "{{ tls_days }}"
+    ownca_not_before: "+0s"
+  register: server_cert
+  delegate_to: "{{ groups['rabbitmq'][0] }}"
+  run_once: true
+
+- name: TLS | write server certificate file on server
+  ansible.builtin.copy:
+    dest: "{{ tls_server_cert }}"
+    content: "{{ server_cert.certificate }}"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  become: true
+  when:
+    - server_cert is changed
+    - inventory_hostname in groups['rabbitmq']
+
+- name: TLS | copy server key file on server
+  ansible.builtin.copy:
+    dest: "{{ tls_server_key }}"
+    src: "{{ tls_tmp_server.key }}"
+    owner: "root"
+    group: "rabbitmq"
+    mode: "0640"
+  become: true
+  when:
+    - inventory_hostname in groups['rabbitmq']
+...

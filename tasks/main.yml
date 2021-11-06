@@ -1,6 +1,10 @@
 ---
 - name: Main | import common tasks
   ansible.builtin.import_tasks: "common.yml"
+  when: inventory_hostname in groups['rabbitmq']
+
+- name: Main | include TLS tasks
+  ansible.builtin.include_tasks: "tls.yml"
 
 - name: Main | include os specific tasks
   ansible.builtin.include_tasks: "{{ lookup('first_found', _params) }}"
@@ -15,10 +19,13 @@
         - "{{ ansible_os_family | lower }}.yml"
       paths:
         - "."
+  when: inventory_hostname in groups['rabbitmq']
 
 - name: Main | include cluster tasks
   ansible.builtin.include_tasks: "cluster.yml"
+  when: inventory_hostname in groups['rabbitmq']
 
 - name: Main | include setup tasks
   ansible.builtin.include_tasks: "setup.yml"
+  when: inventory_hostname in groups['rabbitmq']
 ...

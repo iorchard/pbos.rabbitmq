@@ -17,6 +17,7 @@ rabbitmq_erlang_repo: "/etc/yum.repos.d/rabbitmq_erlang.repo"
 
 service_conf:
   - {dest: "/etc/rabbitmq/rabbitmq-env.conf"}
+  - {dest: "/etc/rabbitmq/rabbitmq.conf"}
 
 systemd_service_name:
   - rabbitmq-server.service
