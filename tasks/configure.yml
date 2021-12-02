@@ -1,0 +1,17 @@
+---
+- name: Configure | template rabbitmq config
+  ansible.builtin.template:
+    dest: "{{ item.dest }}"
+    src: "{{ ansible_os_family | lower }}{{ item.dest + '.j2' }}"
+    owner: "rabbitmq"
+    group: "rabbitmq"
+    mode: "0644"
+  loop: "{{ service_conf }}"
+  become: true
+  changed_when: true
+  notify:
+    - systemctl restart service
+
+- name: Configure | force handlers to run
+  ansible.builtin.meta: flush_handlers
+...

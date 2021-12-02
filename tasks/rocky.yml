@@ -32,23 +32,4 @@
   delay: 3
   become: true
   loop: "{{ packages }}"
-
-- name: Main | include TLS tasks
-  ansible.builtin.include_tasks: "tls.yml"
-
-- name: Rocky Linux | template rabbitmq config
-  ansible.builtin.template:
-    dest: "{{ item.dest }}"
-    src: "{{ ansible_os_family | lower }}{{ item.dest + '.j2' }}"
-    owner: "rabbitmq"
-    group: "rabbitmq"
-    mode: "0644"
-  loop: "{{ service_conf }}"
-  become: true
-  changed_when: true
-  notify:
-    - systemctl restart service
-
-- name: Rocky Linux | force handlers to run
-  ansible.builtin.meta: flush_handlers
 ...
