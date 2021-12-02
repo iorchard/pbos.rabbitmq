@@ -3,9 +3,6 @@
   ansible.builtin.import_tasks: "common.yml"
   when: inventory_hostname in groups['rabbitmq']
 
-- name: Main | include TLS tasks
-  ansible.builtin.include_tasks: "tls.yml"
-
 - name: Main | include os specific tasks
   ansible.builtin.include_tasks: "{{ lookup('first_found', _params) }}"
   vars:

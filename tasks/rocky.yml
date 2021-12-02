@@ -33,6 +33,9 @@
   become: true
   loop: "{{ packages }}"
 
+- name: Main | include TLS tasks
+  ansible.builtin.include_tasks: "tls.yml"
+
 - name: Rocky Linux | template rabbitmq config
   ansible.builtin.template:
     dest: "{{ item.dest }}"
