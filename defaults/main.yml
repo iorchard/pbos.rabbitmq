@@ -6,6 +6,7 @@ rabbitmq_plugins: "rabbitmq_management"
 rabbitmq_port: 5672
 bootstrap_file: "/var/lib/rabbitmq/mnesia/rabbit@{{ inventory_hostname }}/nodes_running_at_shutdown"
 # TLS
+ca_passphrase: ~
 rabbitmq_tls_port: 5671
 tls_tmp_dir: "/tmp/rabbitmq_tls"
 tls_subj: {
@@ -13,12 +14,13 @@ tls_subj: {
   state_or_province_name: "Gangwon-Do",
   locality_name: "Wonju-Si",
   organization_name: "iOrchard",
-  common_name: "PBOS_RABBITMQ",
+  common_name: "pbos-rabbitmq",
   email_address: "support@iorchard.co.kr"
 }
-tls_tmp_ca: {
-  key: "{{ tls_tmp_dir }}/ca-key.pem",
-  crt: "{{ tls_tmp_dir }}/ca-cert.pem"
+tls_ca_dir: "/etc/pki/pbos"
+tls_ca: {
+  key: "{{ tls_ca_dir }}/ca-key.pem",
+  crt: "{{ tls_ca_dir }}/ca-cert.pem"
 }
 tls_tmp_server: {
   key: "{{ tls_tmp_dir }}/server-key.pem",
