@@ -4,10 +4,12 @@
     src: "{{ ansible_os_family | lower }}{{ rabbitmq_repo.file }}"
     dest: "{{ rabbitmq_repo.file }}"
     mode: "0755"
+  when: not offline
 
 - name: Rocky Linux | set rabbitmq repo
   ansible.builtin.command: "{{ rabbitmq_repo.file }}"
   become: true
+  when: not offline
 
 - name: Rocky Linux | copy erlang repo file
   ansible.builtin.copy:
@@ -15,12 +17,14 @@
     dest: "{{ rabbitmq_erlang_repo }}"
     mode: "0644"
   become: true
+  when: not offline
 
 - name: Rocky Linux | import repo gpg keys
   ansible.builtin.command: >-
     rpm --import {{ item }}
   become: true
   loop: "{{ rabbitmq_repo_gpg_keys }}"
+  when: not offline
 
 - name: Rocky Linux | install packages
   ansible.builtin.package:

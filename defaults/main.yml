@@ -1,4 +1,5 @@
 ---
+offline: false
 service_name: rabbitmq
 rabbitmq_openstack_password: ~
 # enable rabbitmq plugins (comma-separated list)
