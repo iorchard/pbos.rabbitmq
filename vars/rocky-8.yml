@@ -1,6 +1,7 @@
 ---
 pkg_state: "latest"
 packages:
+  - erlang-24*
   - rabbitmq-server
 
 rabbitmq_repo:
