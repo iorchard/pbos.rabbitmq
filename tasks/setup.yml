@@ -18,4 +18,16 @@
     names: "{{ rabbitmq_plugins }}"
     state: enabled
   become: true
+
+#- name: Setup | set the HA policy
+#  community.rabbitmq.rabbitmq_policy:
+#    name: HA
+#    pattern: "^(?!amq.).*"
+#    tags:
+#      ha-mode: exactly
+#      ha-params: 2
+#      ha-syncmode: automatic
+#  become: true
+#  delegate_to: "{{ groups['rabbitmq'][0] }}"
+#  run_once: true
 ...
