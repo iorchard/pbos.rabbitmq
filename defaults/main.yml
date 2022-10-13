@@ -31,5 +31,5 @@ tls_server_dir: "/etc/rabbitmq/certificates"
 tls_server_key: "{{ tls_server_dir }}/server-key.pem"
 tls_server_cert: "{{ tls_server_dir }}/server-cert.pem"
 tls_server_ca_cert: "{{ tls_server_dir }}/ca-cert.pem"
-tls_san: "{% if (dns_domain is defined) and (dns_domain|length > 0) %}DNS:rabbitmq.{{ dns_domain[:-1] }},{% endif %}IP:{% if (keepalived_vip_svc is defined) and (keepalived_vip_svc|length > 0) %}{{ keepalived_vip_svc }},{% endif %}IP:{{ keepalived_vip }},{% for s in groups['rabbitmq'] %}IP:{{ hostvars[s].ansible_host }}{% if not loop.last %},{% endif %}{% endfor %}"
+tls_san: "{% if (dns_domain is defined) and (dns_domain|length > 0) %}DNS:rabbitmq.{{ dns_domain[:-1] }},{% endif %}{% if (keepalived_vip_svc is defined) and (keepalived_vip_svc|length > 0) %}IP:{{ keepalived_vip_svc }},{% endif %}IP:{{ keepalived_vip }},{% for s in groups['rabbitmq'] %}IP:{{ hostvars[s].ansible_host }}{% if not loop.last %},{% endif %}{% endfor %}"
 ...
