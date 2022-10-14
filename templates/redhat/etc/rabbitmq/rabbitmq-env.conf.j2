@@ -11,3 +11,6 @@ NODE_IP_ADDRESS={{ ansible_host }}
 
 # Defaults to 5672.
 #NODE_PORT=5672
+
+# listen address on port 25672 for epmd erlang server
+ERL_EPMD_ADDRESS={{ ansible_host }}

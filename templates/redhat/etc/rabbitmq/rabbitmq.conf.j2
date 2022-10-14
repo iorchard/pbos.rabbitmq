@@ -4,6 +4,9 @@
 ## If use non-TLS port
 listeners.tcp.default = {{ ansible_host }}:{{ rabbitmq_port }}
 
+# management UI address
+management.tcp.ip = {{ ansible_host }}
+
 ### TLS config
 listeners.ssl.default = {{ ansible_host }}:{{ rabbitmq_tls_port }}
 ssl_options.cacertfile = {{ tls_server_ca_cert }}
